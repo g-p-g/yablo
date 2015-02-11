@@ -1,0 +1,12 @@
+supervisor
+
+# Storage.
+redis
+sqlalchemy
+
+# Communicate with btcd websocket server.
+websocket-client
+
+# For the API server.
+klein
+treq

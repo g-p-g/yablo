@@ -20,6 +20,9 @@ app = Klein()
 
 @app.route('/watch/address', methods=['POST'])
 def watch_address(request):
+    """
+    Start watching a given address.
+    """
     body = json.loads(request.content.read())
     addy = body['address']
     webhook = body['callback']
@@ -50,8 +53,11 @@ def watch_address(request):
     return json.dumps(result)
 
 
-@app.route('/watch/newblock')
+@app.route('/watch/newblock', methods=['POST'])
 def watch_newblock(request):
+    """
+    Start watching for new blocks.
+    """
     body = json.loads(request.content.read())
     webhook = body['callback']
 
@@ -77,6 +83,32 @@ def watch_newblock(request):
     return json.dumps(result)
 
 
+@app.route('/watch/cancel', methods=['POST'])
+def watch_cancel(request):
+    """
+    Stop watching a specific event.
+    """
+    body = json.loads(request.content.read())
+    event_id = body['id']
+
+    session = storage()
+    try:
+        hook_subs = session.query(WebhookSubscriber).\
+            join(Subscriber, WebhookSubscriber.subs_id == Subscriber.subs_id).\
+            filter(Subscriber.public_id == event_id,
+                   WebhookSubscriber.active == True).one()  # noqa
+    except NoResultFound:
+        # The subscriber is no longer active or it never existed.
+        result = {"success": False}
+        result.update(ErrorFrontend.err_not_found)
+    else:
+        hook_subs.active = False
+        session.commit()
+        result = {"success": True}
+
+    return json.dumps(result)
+
+
 def _find_create_hooksubscriber(session, webhook):
     try:
         hook_subs = session.query(WebhookSubscriber).filter_by(
@@ -87,7 +119,7 @@ def _find_create_hooksubscriber(session, webhook):
         # control.
         subscriber = Subscriber(public_id=str(uuid4()))
         hook_subs = WebhookSubscriber(
-            hook=webhook,
+            hook=webhook, active=True,
             auth_path='', authorized=datetime.utcnow(),
             subscriber=subscriber)
         session.add_all([subscriber, hook_subs])

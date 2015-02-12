@@ -29,7 +29,7 @@ def dispatch_webhook(logger, db, evt_id):
         evt_hook = db.query(Event, WebhookSubscriber.hook).\
             join(WebhookSubscriber,
                  Event.subs_id == WebhookSubscriber.subs_id).\
-            filter(Event.evt_id == evt_id,
+            filter(Event.evt_id == evt_id, WebhookSubscriber.active == True,  # noqa
                    or_(Event.status == None, Event.status == 'retrying')).one()  # noqa
     except NoResultFound:
         result['retry'] = False

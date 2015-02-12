@@ -61,7 +61,8 @@ def _process_new_trans(red, db, raw):
              WebhookSubscriber.subs_id == SubscriberWatchAddress.subs_id).\
         join(WatchAddress,
              WatchAddress.addr_id == SubscriberWatchAddress.addr_id).\
-        filter(WebhookSubscriber.authorized != None,  # noqa
+        filter(WebhookSubscriber.active == True,
+               WebhookSubscriber.authorized != None,  # noqa
                WatchAddress.address.in_(addresses)).all()
     if not hooks:
         return 0
@@ -83,7 +84,8 @@ def _process_new_block(red, db, raw):
     subs = db.query(WebhookSubscriber).\
         join(SubscriberNewBlock,
              WebhookSubscriber.subs_id == SubscriberNewBlock.subs_id).\
-        filter(WebhookSubscriber.authorized != None).all()  # noqa
+        filter(WebhookSubscriber.active == True,
+               WebhookSubscriber.authorized != None).all()  # noqa
 
     if subs:
         _store_dispatch(red, db, block, redis_keys.EVENT_WATCH_BLOCK,

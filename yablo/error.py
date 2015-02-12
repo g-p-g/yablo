@@ -4,6 +4,11 @@ class ErrorFrontend(object):
         'msg': 'already exists'
     }
 
+    err_not_found = {
+        'code': 404,
+        'msg': 'resource not found'
+    }
+
 
 class YabloException(Exception):
     pass

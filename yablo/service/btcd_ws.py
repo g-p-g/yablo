@@ -33,7 +33,7 @@ class BitcoinWebsocket(object):
 
         self.red = red
         self.cfg = cfg or config.app_config
-        if not self.cfg.get('bitcoin_config'):
+        if not self.cfg.get('bitcoin_cfg'):
             raise error.ConfigException('bitcoin config file is missing')
 
         self.wss = None

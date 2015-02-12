@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import create_engine, Column, ForeignKey
-from sqlalchemy import String, Integer, DateTime, Enum, BLOB
+from sqlalchemy import String, Integer, DateTime, Boolean, Enum, BLOB
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
@@ -72,6 +72,7 @@ class WebhookSubscriber(Base):
     subs_id = Column('subscriber_id', Integer, ForeignKey('subscriber.id'),
                      primary_key=True)
     hook = Column(String(1024), nullable=False, unique=True)
+    active = Column(Boolean, nullable=False)
     auth_path = Column(String(1024), nullable=False)
     authorized = Column(DateTime)
 

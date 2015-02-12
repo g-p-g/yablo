@@ -75,4 +75,19 @@ def watch(request, addy):
     return result
 
 
+@app.route('/watch/cancel', methods=["POST"])
+def watch_cancel(request):
+    request.setHeader("Access-Control-Allow-Origin", '*')
+
+    evt_id = str(request.args.get('id', [''])[0].strip())
+    if len(evt_id) != 36:
+        return '{"error": "invalid id \'%s\'"}' % evt_id
+
+    result = treq.post(WATCH_SERVER_URL + '/cancel',
+                       json.dumps({'id': evt_id}),
+                       headers={'Content-Type': ['application/json']})
+    result.addCallback(treq.content)
+    return result
+
+
 resource = app.resource

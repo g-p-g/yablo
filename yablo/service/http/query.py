@@ -32,21 +32,15 @@ def handle_query(request, query):
         log.msg('cache miss', query)
 
     result, cache_by = process_query(query)
-    encres = json.dumps(result)
+    encres = json.dumps(result, sort_keys=True)
 
     # Cache the result.
     for key, val in cache_by.iteritems():
         result['query'] = [key]
         cache_key = query if val is None else result['data'][val]
-        storage.cache_query(cache_key, json.dumps(result))
+        storage.cache_query(cache_key, json.dumps(result, sort_keys=True))
 
     return encres
-
-
-def _cache(result, *keys):
-    res = json.dumps(result)
-    for key in keys:
-        storage.cache_query(key, res)
 
 
 def process_query(query):
@@ -138,8 +132,7 @@ def query_block_height(height, bestblock=False):
         kwargs = {'method': 'getblockhash', 'params': [height]}
     else:
         kwargs = {'method': 'getbestblockhash'}
-    ret = btc.wss.send(**kwargs)
-    log.msg("ret = %s" % repr(ret))
+    btc.wss.send(**kwargs)
     blockhash = btc.wss.recv()
 
     if blockhash['result']:

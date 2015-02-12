@@ -117,7 +117,7 @@ def _store_dispatch(red, db, data, etype, custom, *subscribers):
 
         db_evt = Event(subs_id=subs.subs_id,
                        num_attempt=0,
-                       data=json.dumps(event))
+                       data=json.dumps(event, sort_keys=True))
         new_evt.append(db_evt)
 
     db.add_all(new_evt)

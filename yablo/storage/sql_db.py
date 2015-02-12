@@ -60,7 +60,7 @@ Base = declarative_base()
 class Subscriber(Base):
     __tablename__ = "subscriber"
     subs_id = Column('id', Integer, primary_key=True)
-    public_id = Column(String(36), unique=True, nullable=False)
+    public_id = Column(String(36), unique=True, nullable=False, index=True)
 
 
 class WebhookSubscriber(Base):

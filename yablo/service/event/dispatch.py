@@ -12,13 +12,14 @@ import requests
 from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 
-from ..config import app_config
-from ..storage import redis_keys
-from ..storage.sql_db import setup_storage, Event, WebhookSubscriber
+from ...config import app_config
+from ...storage import redis_keys
+from ...storage.sql_db import setup_storage, Event, WebhookSubscriber
 
 
 REQUEST_CONNECT_TIMEOUT = 3  # seconds
 REQUEST_READ_TIMEOUT = 3
+REQUEST_TIMEOUT = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
 
 
 def dispatch_webhook(logger, db, evt_id):
@@ -41,7 +42,7 @@ def dispatch_webhook(logger, db, evt_id):
 
     try:
         res = requests.post(hook, data=evt.data,
-                            timeout=(REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT),
+                            timeout=REQUEST_TIMEOUT,
                             headers={'Content-type': 'application/json'})
         if res and res.status_code == 200:
             result['error'] = False
@@ -131,7 +132,7 @@ class Dispatch(object):
             if result and result['error']:
                 if result['retry']:
                     raise Exception('failed to dispatch evt: %s' %
-                        repr(result['reason']))
+                                    repr(result['reason']))
                 else:
                     self.logger.debug('discarding event %s: %s' % (
                         evt, result['reason']))

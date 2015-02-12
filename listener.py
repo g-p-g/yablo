@@ -5,7 +5,7 @@ import logging
 
 import redis
 
-from yablo.btcd_ws import BitcoinWebsocket
+from yablo.service.btcd_ws import BitcoinWebsocket
 
 
 def main():

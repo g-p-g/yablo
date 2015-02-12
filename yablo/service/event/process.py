@@ -4,12 +4,12 @@ import calendar
 from uuid import uuid4
 from datetime import datetime
 
-from ..error import YabloException
-from ..config import app_config
-from ..storage import redis_keys
-from ..storage.sql_db import setup_storage
-from ..storage.sql_db import (WatchAddress, WebhookSubscriber, Event,
-                              SubscriberWatchAddress, SubscriberNewBlock)
+from ...error import YabloException
+from ...config import app_config
+from ...storage import redis_keys
+from ...storage.sql_db import setup_storage
+from ...storage.sql_db import (WatchAddress, WebhookSubscriber, Event,
+                               SubscriberWatchAddress, SubscriberNewBlock)
 
 
 EVENT_TYPE = {

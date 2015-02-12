@@ -6,7 +6,7 @@ import logging
 
 import redis
 
-from yablo.event.dispatch import Dispatch
+from yablo.service.event.dispatch import Dispatch
 
 
 def main(pnum):

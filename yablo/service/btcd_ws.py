@@ -11,12 +11,13 @@ import logging
 
 import websocket
 
-from . import config, error
-from .storage import redis_keys
+from .. import config, error
+from ..storage import redis_keys
 
 
 KNOWN_NOTIFICATIONS = frozenset([
-    'blockconnected', 'blockdisconnected',
+    'blockconnected',
+    'blockdisconnected',
     'txacceptedverbose'
 ])
 
@@ -32,6 +33,8 @@ class BitcoinWebsocket(object):
 
         self.red = red
         self.cfg = cfg or config.app_config
+        if not self.cfg.get('bitcoin_config'):
+            raise error.ConfigException('bitcoin config file is missing')
 
         self.wss = None
         self.wss_notifier = None

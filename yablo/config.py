@@ -58,7 +58,7 @@ def _parse_bitcoin_common(rawcfg, assume_defaults, add_port):
 
     if assume_defaults and not use_default:
         raise error.ConfigException("bitcoin_conf: Provide a server "
-            "(rpcserver) and port to connect to (rpclisten)")
+                                    "(rpcserver) and port to connect to (rpclisten)")
 
     app_config.update(rawcfg)
 

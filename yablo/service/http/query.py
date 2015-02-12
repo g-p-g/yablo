@@ -10,7 +10,7 @@ from twisted.python import log
 
 from .format import strip_transaction
 from ..btcd_ws import BitcoinWebsocket
-from ..storage.redis_db import RedisStorage
+from ...storage.redis_db import RedisStorage
 
 
 app = Klein()

@@ -6,7 +6,7 @@ import logging
 
 import redis
 
-from yablo.event.process import process_loop
+from yablo.service.event.process import process_loop
 
 
 def main(pnum):

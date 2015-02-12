@@ -9,7 +9,7 @@ import treq
 from klein import Klein
 from twisted.python import log
 
-from ..config import app_config
+from ...config import app_config
 
 
 CORS_MAX_AGE = 60 * 60 * 24 * 5  # cache preflights for 5 days

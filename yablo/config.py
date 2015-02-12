@@ -24,7 +24,8 @@ def _parse_bitcoin(cfg, assume_defaults):
     if 'bitcoin_conf' not in cfg and not assume_defaults:
         raise error.ConfigException("Provide a path for bitcoin_conf")
 
-    _parse_btcd(cfg, assume_defaults)
+    err = _parse_btcd(cfg, assume_defaults)
+    app_config['bitcoin_cfg'] = False if err else True
 
 
 def _parse_btcd(cfg, assume_defaults):
@@ -32,13 +33,17 @@ def _parse_btcd(cfg, assume_defaults):
         raise error.ConfigException("Provide the path for the rpc_cert setting")
 
     cert = expand(cfg.get('rpc_cert', '~/.btcd/rpc.cert'))
-    if not os.path.exists(cert):
-        raise error.ConfigException("No rpc cert file found at %s" % cert)
     app_config['bitcoin_cert'] = cert
 
     confpath = cfg.get('bitcoin_conf', '~/.btcd/btcd.conf')
     btcd_cfg = ConfigParser()
-    btcd_cfg.readfp(open(expand(confpath)))
+    try:
+        btcd_cfg.readfp(open(expand(confpath)))
+    except IOError:
+        # btcd config could not be read, assuming it is not
+        # required. Otherwise, this will fail when trying to
+        # use it.
+        return True
 
     rawcfg = dict(btcd_cfg.items('Application Options'))
     _parse_bitcoin_common(rawcfg, assume_defaults, 1)

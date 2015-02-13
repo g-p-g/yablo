@@ -46,6 +46,8 @@ def _parse_btcd(cfg, assume_defaults):
         return True
 
     rawcfg = dict(btcd_cfg.items('Application Options'))
+    if 'rpclisten' not in rawcfg and cfg.get('port'):
+        rawcfg['rpclisten'] = cfg['port']
     _parse_bitcoin_common(rawcfg, assume_defaults, 1)
 
 

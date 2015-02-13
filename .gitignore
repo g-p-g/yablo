@@ -1,3 +1,7 @@
 mon/
 *.db
 *.pyc
+*.pem
+*.csr
+*.key
+*.crt

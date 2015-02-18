@@ -43,6 +43,17 @@ def watch_newblocks(webhook):
     return watch_address('newblock', webhook)
 
 
+def watch_discblock(webhook):
+    """
+    Start watching for blocks that are removed from the main chain.
+
+    :param str webhook: the http(s) url that will receive POST
+        requests describing the discblock event
+    :rtype: dict
+    """
+    return watch_address('discblock', webhook)
+
+
 def cancel_watch(watch_id):
     """
     Stop watching a given event.

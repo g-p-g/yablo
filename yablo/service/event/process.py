@@ -9,12 +9,14 @@ from ...config import app_config
 from ...storage import redis_keys
 from ...storage.sql_db import setup_storage
 from ...storage.sql_db import (WatchAddress, WebhookSubscriber, Event,
-                               SubscriberWatchAddress, SubscriberNewBlock)
+                               SubscriberWatchAddress, SubscriberNewBlock,
+                               SubscriberDiscBlock)
 
 
 EVENT_TYPE = {
     redis_keys.EVENT_WATCH_BLOCK: 'newblock',
-    redis_keys.EVENT_WATCH_ADDR: 'address'
+    redis_keys.EVENT_WATCH_ADDR: 'address',
+    redis_keys.EVENT_WATCH_BLOCKDISC: 'discblock'
 }
 
 
@@ -44,7 +46,7 @@ def process_event(red, db, evt):
     elif evt_type == redis_keys.EVENT_NEW_BLOCK:
         num = _process_new_block(red, db, data)
     elif evt_type == redis_keys.EVENT_BLOCKDISC:
-        num = _process_blockdisc(red, db, data)
+        num = _process_disc_block(red, db, data)
     else:
         raise YabloException("unknown event type '%s'" % evt_type)
 
@@ -61,8 +63,8 @@ def _process_new_trans(red, db, raw):
              WebhookSubscriber.subs_id == SubscriberWatchAddress.subs_id).\
         join(WatchAddress,
              WatchAddress.addr_id == SubscriberWatchAddress.addr_id).\
-        filter(WebhookSubscriber.active == True,
-               WebhookSubscriber.authorized != None,  # noqa
+        filter(WebhookSubscriber.active == True,  # noqa
+               WebhookSubscriber.authorized != None,
                WatchAddress.address.in_(addresses)).all()
     if not hooks:
         return 0
@@ -78,25 +80,28 @@ def _process_new_trans(red, db, raw):
 
 
 def _process_new_block(red, db, raw):
+    return _process_block(red, db, raw, SubscriberNewBlock,
+                          redis_keys.EVENT_WATCH_BLOCK)
+
+
+def _process_disc_block(red, db, raw):
+    return _process_block(red, db, raw, SubscriberDiscBlock,
+                          redis_keys.EVENT_WATCH_BLOCKDISC)
+
+
+def _process_block(red, db, raw, model, evt):
     block = _format_block(raw)
 
-    # Find subscribers that are watching for new blocks.
+    # Find subscribers that are watching for block discs.
     subs = db.query(WebhookSubscriber).\
-        join(SubscriberNewBlock,
-             WebhookSubscriber.subs_id == SubscriberNewBlock.subs_id).\
-        filter(WebhookSubscriber.active == True,
-               WebhookSubscriber.authorized != None).all()  # noqa
+        join(model, WebhookSubscriber.subs_id == model.subs_id).\
+        filter(WebhookSubscriber.active == True,  # noqa
+               WebhookSubscriber.authorized != None).all()
 
     if subs:
-        _store_dispatch(red, db, block, redis_keys.EVENT_WATCH_BLOCK,
-                        {}, *subs)
+        _store_dispatch(red, db, block, evt, {}, *subs)
 
     return len(subs)
-
-
-def _process_blockdisc(red, db, raw):
-    print raw, 'block disconnected :/'
-    raise NotImplementedError
 
 
 def _store_dispatch(red, db, data, etype, custom, *subscribers):

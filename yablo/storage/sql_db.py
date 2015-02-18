@@ -44,14 +44,15 @@ def get_or_create(session, model, **kwargs):
 
 def create_if_not_present(session, model, **kwargs):
     """
-    Create a new record if it does not exist. If it does, None
-    is returned.
+    Create a new record if it does not exist.
+
+    :returns: a tuple containing a record and a flag indicating whether
+        it was created now or if it already existed
     """
     try:
-        session.query(model).filter_by(**kwargs).one()
-        return None
+        return session.query(model).filter_by(**kwargs).one(), False
     except NoResultFound:
-        return model(**kwargs)
+        return model(**kwargs), True
 
 
 Base = declarative_base()
@@ -110,6 +111,21 @@ class SubscriberNewBlock(Base):
 
     def __repr__(self):
         return "<SubscriberNewBlock(subs_id=%s)>" % self.subs_id
+
+
+class SubscriberDiscBlock(Base):
+    """
+    Subscribers interested in blocks that get disconnected from the main chain.
+    """
+    __tablename__ = "subscriber_discblock"
+
+    subs_id = Column('subscriber_id', Integer, ForeignKey('subscriber.id'),
+                     primary_key=True)
+
+    subscriber = relationship(Subscriber, uselist=False)
+
+    def __repr__(self):
+        return "<SubscriberDiscBlock(subs_id=%s)>" % self.subs_id
 
 
 class SubscriberWatchAddress(Base):

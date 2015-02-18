@@ -52,14 +52,17 @@ def watch(request, addy):
     request.setHeader("Access-Control-Allow-Origin", '*')
 
     new_watch = {}
-    if addy not in ('newblocks', 'newblock'):
+    if addy in ('newblocks', 'newblock'):
+        url_append = '/newblock'
+    elif addy == 'discblock':
+        url_append = '/discblock'
+    else:
+        # Watch an address.
         if not (26 <= len(addy) <= 35):
             # Consider actually checking for a valid address here.
             return '{"error": "invalid address"}'
         new_watch['address'] = addy
         url_append = '/address'
-    else:
-        url_append = '/newblock'
 
     webhook_raw = str(request.args.get('callback', [''])[0]).lower().strip()
     webhook = urlparse(webhook_raw)

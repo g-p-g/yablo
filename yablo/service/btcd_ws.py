@@ -22,7 +22,35 @@ KNOWN_NOTIFICATIONS = frozenset([
 ])
 
 
-class BitcoinWebsocket(object):
+class BitcoinRPC(object):
+    """
+    This is expected to be used as a mix-in.
+    It expects that an object named wss exists.
+
+    The number of bytes sent through wss are stored in the current
+    instance under nsent.
+    """
+
+    def getblockcount(self):
+        self.nsent = self.wss.send(method='getblockcount')
+        return self._recv()
+
+    def getblockhash(self, height):
+        self.nsent = self.wss.send(method='getblockhash', params=[height])
+        return self._recv()
+
+    def getblock(self, block_hash, verbose=True, verbose_tx=True):
+        params = [block_hash, verbose, verbose_tx]
+        self.nsent = self.wss.send(method='getblock', params=params)
+        return self._recv()
+
+    def _recv(self):
+        response = self.wss.recv()
+        if response:
+            return response['result']
+
+
+class BitcoinWebsocket(BitcoinRPC):
 
     def __init__(self, red, cfg=None):
         """
@@ -96,9 +124,8 @@ class BitcoinWebsocket(object):
             self.logger.debug("new block %r", msg['params'])
             self._handle_blockconnected(msg['params'])
         elif method == 'blockdisconnected':
-            self.logger.warning("block %s (%d) is no longer part of the main chain",
-                                *msg['params'])
-            handle_blockdisconnected(self.red, msg['params'])
+            self.logger.warning("block disconnected %r", msg)
+            self._handle_blockdisconnected(msg['params'])
 
         return msg
 
@@ -137,6 +164,13 @@ class BitcoinWebsocket(object):
             else:
                 self.logger.debug("wss.recv failed, retrying")
 
+        if block is None:
+            # The value for 'result' is None, this has been observed when
+            # a fork happens. Do nothing.
+            self.logger.warning('empty result for getblock %s (height %d)',
+                                block_hash, height)
+            return
+
         assert block['height'] == height
 
         stripped_block = {
@@ -148,6 +182,16 @@ class BitcoinWebsocket(object):
             'tx': block['tx']
         }
         evt = {'type': redis_keys.EVENT_NEW_BLOCK, 'data': stripped_block}
+        self.red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+
+    def _handle_blockdisconnected(self, data):
+        """A given block has been removed from the main chain."""
+        block_hash, height = data
+        val = {
+            'b': block_hash,
+            'h': height
+        }
+        evt = {'type': redis_keys.EVENT_BLOCKDISC, 'data': val}
         self.red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
 
 
@@ -226,8 +270,10 @@ class WebsocketConnection(object):
                 'ca_certs': cert,
                 'cert_reqs': ssl.CERT_REQUIRED,
             }
+            protocol = 'wss'
         else:
             opts = {}
+            protocol = 'ws'
 
         attempt = 0
         nretries = self.retry
@@ -235,7 +281,7 @@ class WebsocketConnection(object):
         while attempt < retry:
             try:
                 wss = websocket.create_connection(
-                    'wss://%(rpcserver)s:%(rpclisten)s/ws' % self.cfg,
+                    protocol + '://%(rpcserver)s:%(rpclisten)s/ws' % self.cfg,
                     sslopt=opts)
                 return wss
             except socket.error, err:
@@ -244,13 +290,6 @@ class WebsocketConnection(object):
                 time.sleep(sleep)
 
             attempt += 1
-
-
-def handle_blockdisconnected(red, data):
-    """A given block has been removed from the main chain."""
-    val = '%s_%d' % data
-    evt = {'type': redis_keys.EVENT_BLOCKDISC, 'data': val}
-    red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
 
 
 def _collect_vout(trans):

@@ -42,9 +42,12 @@ def query(request):
     return result
 
 
-@app.route('/watch/<addy>', methods=["POST"])
-def watch(request, addy):
+@app.route('/watch', methods=["POST"])
+def watch(request):
     request.setHeader("Access-Control-Allow-Origin", '*')
+
+    addy = str(request.args.get('address', [''])[0]).strip()
+    log.msg('m> %r' % addy)
 
     new_watch = {}
     if addy in ('newblocks', 'newblock'):

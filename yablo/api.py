@@ -27,8 +27,8 @@ def watch_address(address, webhook):
         requests describing the event involving the address specified
     :rtype: dict
     """
-    response = requests.post(BASE_URL + "/watch/%s" % address,
-                             data={'callback': webhook})
+    response = requests.post(BASE_URL + "/watch",
+                             data={'address': address, 'callback': webhook})
     return response.json()
 
 

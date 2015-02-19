@@ -5,3 +5,4 @@ mon/
 *.csr
 *.key
 *.crt
+*.swp

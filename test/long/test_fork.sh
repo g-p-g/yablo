@@ -4,7 +4,7 @@ cd "$HERE"
 python forker.py &
 FPID=$!
 
-cd .. && PYTHONPATH=. timeout 300 python test/fork_watcher.py
+cd ../.. && PYTHONPATH=. timeout 300 python test/long/fork_watcher.py
 RESULT=$?
 
 kill -2 ${FPID}

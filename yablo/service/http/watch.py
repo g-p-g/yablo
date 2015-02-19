@@ -37,7 +37,6 @@ def watch_address(request):
                                                 subscriber=hook_subs.subscriber,
                                                 address=watch)
 
-
     if not created and hook_subs.active:
         result = {"success": False}
         result.update(ErrorFrontend.err_already_exists)

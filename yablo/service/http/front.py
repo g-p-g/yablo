@@ -32,14 +32,9 @@ def query(request):
 
     query_request = str(request.args.get('q', [''])[0].strip().replace(' ', '_'))
     log.msg('q> %r' % query_request)
-    try:
-        query_url = '%s/%s' % (QUERY_SERVER_URL, query_request)
-    except Exception:
-        log.err()
-        query_request = None
 
     if query_request:
-        result = treq.get(query_url)
+        result = treq.get(QUERY_SERVER_URL, params={'q': query_request})
         result.addCallback(treq.content)
     else:
         result = '{"error": "query not specified"}'

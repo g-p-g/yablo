@@ -21,8 +21,11 @@ btc = BitcoinWebsocket(red)
 btc.setup(notifier=False)
 
 
-@app.route('/query/<query>')
-def handle_query(request, query):
+@app.route('/query')
+def handle_query(request):
+    log.msg(repr(request.args))
+    query = request.args.get('q')[0]
+
     # Return a cached version if it exists.
     cache = storage.cached_query(query)
     if cache:

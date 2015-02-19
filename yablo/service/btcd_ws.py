@@ -148,9 +148,10 @@ class BitcoinWebsocket(BitcoinRPC):
 
     def _handle_blockconnected(self, data):
         """Received notification about a new block. Get more details."""
+        block_hash, height = data
+
         # Send a getblock request outside the notifier connection
         # to avoid mixing messages.
-        block_hash, height = data
         while True:
             nsent = self.wss.send(method='getblock',
                                   params=[block_hash, True, False])

@@ -50,14 +50,14 @@ def process_query(query):
     result = {'query': None, 'data': None}
     cache_by = None
 
-    if query.isdigit() and len:
+    if query.isdigit() and len(query) < 25:
         # Query by block height.
         result['query'] = ['height']
         res = query_block_height(int(query))
         if res:
             # Found a block.
             result['data'] = res
-            cache_by = {result['query'][0]: None, 'block_hash': 'hash'}
+            cache_by = {result['query'][0]: 'height', 'block_hash': 'hash'}
     elif len(query) == 64 and '_' not in query:
         # Try searching by txid first.
         result['query'] = ['txid']
@@ -156,6 +156,7 @@ def query_block_hash(blockhash):
         return
 
     del block['id']
+    del block['result']['confirmations']
     for tx in block['result']['rawtx']:
         strip_transaction(tx)
 

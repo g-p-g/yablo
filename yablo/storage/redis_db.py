@@ -17,3 +17,7 @@ class RedisStorage(object):
 
     def cache_query(self, query, result):
         self.red.setex(redis_keys.QUERY_CACHE % query, QUERY_EXPIRE, result)
+
+    def cache_remove(self, query):
+        key = redis_keys.QUERY_CACHE % query
+        self.red.delete(key)

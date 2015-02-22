@@ -6,6 +6,7 @@ from uuid import uuid4
 from datetime import datetime
 
 from klein import Klein
+from twisted.python import log
 from sqlalchemy.orm.exc import NoResultFound
 
 from ...error import ErrorFrontend
@@ -17,6 +18,19 @@ from ...storage.sql_db import (WatchAddress, Subscriber, SubscriberNewBlock,
 
 storage = setup_storage()
 app = Klein()
+
+
+@app.handle_errors
+def error_handler(request, failure):
+    log.err(request)
+    log.err(failure)
+
+    code = 500
+    msg = 'server failed to process this request'
+    response = json.dumps({'code': code, 'msg': msg})
+    request.setResponseCode(code)
+
+    return response
 
 
 @app.route('/watch/address', methods=['POST'])

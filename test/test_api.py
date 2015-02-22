@@ -9,8 +9,9 @@ class TestQuery(unittest.TestCase):
     def test_query_notspecified(self):
         for notspecified in (None, ''):
             res = api.query(notspecified)
-            self.assertIn('error', res)
-            self.assertEqual(res['error'], 'query not specified')
+            self.assertEqual(res.get('code'), 400)
+            self.assertIn('msg', res)
+            self.assertEqual(res['msg'], 'query not specified')
 
     def test_query_unknown(self):
         for unknown in ('foo', '?', u'çáé', '-1', '1e30', -1, 1e100, '1.35'):
@@ -70,7 +71,6 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(res.get('query'), ['txid'])
         self.assertIn('data', res)
         self.assertEqual(tx, res['data']['txid'])
-        self.assertGreater(res['data']['confirmations'], 0)
 
         res = api.query(tx[:-1] + 'x')
         self.assertEqual(res.get('query'), ['txid', 'block_hash'])
@@ -110,7 +110,7 @@ class TestWatch(unittest.TestCase):
 
         for invalid in ('a', '?', '', None):
             res = api.watch_address(invalid, cb)
-            self.assertEqual(res.get('error'), 'invalid address')
+            self.assertEqual(res.get('msg'), 'invalid address')
 
         for test in ('1' * 30, ):  # Addresses are not validated here.
             res = api.watch_address(test, cb)
@@ -124,8 +124,9 @@ class TestWatch(unittest.TestCase):
                 self.evt_list.add(res['id'])
                 self.fail('succeeded with callback = "%s"' % invalid)
 
-            self.assertIn('error', res)
-            self.assertTrue(res['error'].startswith('invalid callback '))
+            self.assertIn('msg', res)
+            self.assertEqual(res.get('code'), 400)
+            self.assertTrue(res['msg'].startswith('invalid callback '))
 
         cb = 'http://localhost:10000/abc'
         res = func(cb)

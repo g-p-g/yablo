@@ -21,6 +21,19 @@ btc = BitcoinWebsocket(red)
 btc.setup(notifier=False)
 
 
+@app.handle_errors
+def error_handler(request, failure):
+    log.err(request)
+    log.err(failure)
+
+    code = 500
+    msg = 'server failed to process this query'
+    response = json.dumps({'code': code, 'msg': msg})
+    request.setResponseCode(code)
+
+    return response
+
+
 @app.route('/query')
 def handle_query(request):
     log.msg(repr(request.args))

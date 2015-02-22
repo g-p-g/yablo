@@ -2,6 +2,7 @@
 import unittest
 
 from yablo import api
+from yablo import checkjson #import validate
 
 
 class TestQuery(unittest.TestCase):
@@ -9,6 +10,8 @@ class TestQuery(unittest.TestCase):
     def test_query_notspecified(self):
         for notspecified in (None, ''):
             res = api.query(notspecified)
+            checkjson.validate(res, checkjson.FRONT_ERROR)
+            checkjson.validate(res)
             self.assertEqual(res.get('code'), 400)
             self.assertIn('msg', res)
             self.assertEqual(res['msg'], 'query not specified')
@@ -16,14 +19,14 @@ class TestQuery(unittest.TestCase):
     def test_query_unknown(self):
         for unknown in ('foo', '?', u'çáé', '-1', '1e30', -1, 1e100, '1.35'):
             res = api.query(unknown)
-            self.assertIn('query', res)
-            self.assertIn('data', res)
-            self.assertEqual(res['query'], res['data'])
-            self.assertEqual(res['query'], None)
+            checkjson.validate(res, checkjson.QUERY_NORESULT)
+            checkjson.validate(res)
 
     def test_query_empty(self):
         h = 'f' * 64
         res = api.query(h)
+        checkjson.validate(res, checkjson.QUERY_EMPTYRESULT)
+        checkjson.validate(res)
         self.assertIn('data', res)
         self.assertIn('query', res)
         self.assertEqual(res['data'], None)
@@ -33,23 +36,28 @@ class TestQuery(unittest.TestCase):
     def test_query_block(self):
         # Query by height.
         res = api.query(0)
-        self.assertIn('query', res)
+        checkjson.validate(res, checkjson.QUERY_BLOCK)
+        checkjson.validate(res)
+
         self.assertIn('height', res['query'])
         self.assertEqual(1, len(res['query']))
-        self.assertIn('data', res)
         self.assertEqual(res['data']['height'], 0)
 
         # Query the same block but by its hash.
         blockhash = res['data']['hash']
         block = api.query(blockhash)
+        checkjson.validate(block, checkjson.QUERY_BLOCK)
+        checkjson.validate(block)
+
         self.assertEqual(block['data'], res['data'])
-        self.assertIn('query', block)
         self.assertIn('block_hash', block['query'])
         self.assertEqual(1, len(block['query']))
 
     def test_query_bestblock(self):
         rescmp = api.query('bestblock')
-        self.assertIn('query', rescmp)
+        checkjson.validate(rescmp, checkjson.QUERY_BLOCK)
+        checkjson.validate(rescmp)
+
         self.assertIn('custom', rescmp['query'])
         self.assertIn('lastblock', rescmp['query'])
         self.assertEqual(2, len(rescmp['query']))
@@ -68,6 +76,9 @@ class TestQuery(unittest.TestCase):
             self.fail('no txid found in block 0')
 
         res = api.query(tx)
+        checkjson.validate(res, checkjson.QUERY_TRANSACTION)
+        checkjson.validate(res)
+
         self.assertEqual(res.get('query'), ['txid'])
         self.assertIn('data', res)
         self.assertEqual(tx, res['data']['txid'])
@@ -82,15 +93,18 @@ class TestQuery(unittest.TestCase):
             self.fail('no address found in block 0')
 
         res = api.query(addr)
-        self.assertIn('query', res)
-        self.assertIn('address', res['query'])
+        checkjson.validate(res, checkjson.QUERY_ADDRESS)
+        checkjson.validate(res)
+
         self.assertEqual(1, len(res['query']))
-        self.assertIn('data', res)
         self.assertEqual(res['data'].get('address'), addr)
         self.assertEqual(res['data'].get('note'), 'not implemented')
 
         invalid_addr = addr[:-1] + 'x'
         res = api.query(invalid_addr)
+        checkjson.validate(res, checkjson.QUERY_EMPTYRESULT)
+        checkjson.validate(res)
+
         self.assertEqual(res.get('query'), ['address'])
         self.assertEqual(res.get('data', ''), None)
 
@@ -110,6 +124,8 @@ class TestWatch(unittest.TestCase):
 
         for invalid in ('a', '?', '', None):
             res = api.watch_address(invalid, cb)
+            checkjson.validate(res, checkjson.FRONT_ERROR)
+            checkjson.validate(res)
             self.assertEqual(res.get('msg'), 'invalid address')
 
         for test in ('1' * 30, ):  # Addresses are not validated here.
@@ -124,7 +140,8 @@ class TestWatch(unittest.TestCase):
                 self.evt_list.add(res['id'])
                 self.fail('succeeded with callback = "%s"' % invalid)
 
-            self.assertIn('msg', res)
+            checkjson.validate(res, checkjson.FRONT_ERROR)
+            checkjson.validate(res)
             self.assertEqual(res.get('code'), 400)
             self.assertTrue(res['msg'].startswith('invalid callback '))
 
@@ -145,9 +162,10 @@ class TestWatch(unittest.TestCase):
 
         # Try activating again.
         res2 = api.watch_newblocks(cb)
+        checkjson.validate(res2, checkjson.FRONT_ERROR)
+        checkjson.validate(res2)
         self.assertEqual(res2.get('msg'), 'already exists')
         self.assertEqual(res2.get('code'), 409)
-        self.assertEqual(res2.get('success', ''), False)
 
         # Cancel it.
         res = api.cancel_watch(res['id'])
@@ -199,6 +217,8 @@ class TestWatch(unittest.TestCase):
     def _check_watchaddress(self, res, cb, address):
         self.assertIn('id', res)
         self.evt_list.add(res['id'])
+        checkjson.validate(res, checkjson.WATCH_ADDRESS)
+
         self.assertEqual(res.get('success'), True)
         self.assertEqual(res.get('callback'), cb)
         self.assertEqual(res.get('address'), address)
@@ -207,6 +227,7 @@ class TestWatch(unittest.TestCase):
     def _check_watchblock(self, res, cb, etype):
         self.assertIn('id', res)
         self.evt_list.add(res['id'])
+        checkjson.validate(res, checkjson.WATCH_BLOCK)
 
         self.assertEqual(res.get('success'), True)
         self.assertEqual(res.get('callback'), cb)

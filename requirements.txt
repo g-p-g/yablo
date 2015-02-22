@@ -10,3 +10,6 @@ websocket-client
 # For the API server.
 klein
 treq
+
+# Define JSON schemas and validate returned data (optional).
+jsonschema

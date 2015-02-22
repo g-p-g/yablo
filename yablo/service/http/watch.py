@@ -52,8 +52,7 @@ def watch_address(request):
                                                 address=watch)
 
     if not created and hook_subs.active:
-        result = {"success": False}
-        result.update(ErrorFrontend.err_already_exists)
+        result = ErrorFrontend.err_already_exists
     else:
         if not hook_subs.active:
             hook_subs.active = True
@@ -107,8 +106,7 @@ def watch_cancel(request):
                    WebhookSubscriber.active == True).one()  # noqa
     except NoResultFound:
         # The subscriber is no longer active or it never existed.
-        result = {"success": False}
-        result.update(ErrorFrontend.err_not_found)
+        result = ErrorFrontend.err_not_found
     else:
         hook_subs.active = False
         session.commit()
@@ -147,8 +145,7 @@ def _simple_subscriber(request, substype, model):
     subs_instance, created = create_if_not_present(session, model,
                                                    subscriber=hook_subs.subscriber)
     if not created and hook_subs.active:
-        result = {"success": False}
-        result.update(ErrorFrontend.err_already_exists)
+        result = ErrorFrontend.err_already_exists
     else:
         if not hook_subs.active:
             hook_subs.active = True

@@ -128,10 +128,12 @@ def _store_dispatch(red, db, data, etype, custom, *subscribers):
     db.add_all(new_evt)
     db.commit()
 
+    pipe = red.pipeline()
     for evt, webhook in zip(new_evt, hook):
         # Store the id for this event, which is ready to be sent.
-        red.rpush(redis_keys.SEND_EVENT, '%d_%d' % (
+        pipe.rpush(redis_keys.SEND_EVENT, '%d_%d' % (
             redis_keys.EVENT_METHOD_WEBHOOK, evt.evt_id))
+    pipe.execute()
 
 
 def _format_trans(raw):

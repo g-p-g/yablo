@@ -6,3 +6,6 @@ mon/
 *.key
 *.crt
 *.swp
+
+cover
+.coverage

@@ -9,7 +9,7 @@ ROUTE=$(dd if=/dev/urandom bs=1 count=8 2>/dev/null | xxd -p)
 PORT=12312
 
 # Start http server for listening for callbacks.
-python receiver.py ${PORT} ${ROUTE} &
+cd ../.. && PYTHONPATH=. python test/long/receiver.py ${PORT} ${ROUTE} &
 
 cd ../.. && PYTHONPATH=. timeout 300 python test/long/fork_watcher_integration.py ${PORT} ${ROUTE}
 RESULT=$?

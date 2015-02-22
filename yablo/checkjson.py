@@ -9,9 +9,7 @@ from .error import YabloException
 FRONT_ERROR = {
     "type": "object",
     "properties": {
-        "msg": {
-            "type": "string"
-        },
+        "msg": {"type": "string"},
         "code": {
             "type": "integer",
             "minimum": 400
@@ -32,12 +30,8 @@ _QUERY = {
 # No category found for the query entered.
 QUERY_NORESULT = _QUERY.copy()
 QUERY_NORESULT['properties'] = {
-    "query": {
-        "type": "null"
-    },
-    "data": {
-        "type": "null"
-    }
+    "query": {"type": "null"},
+    "data": {"type": "null"}
 }
 
 # No results found for the query entered.
@@ -45,9 +39,7 @@ QUERY_EMPTYRESULT = _QUERY.copy()
 QUERY_EMPTYRESULT['properties'] = {
     "query": {
         "type": "array",
-        "items": {
-            "type": "string"
-        },
+        "items": {"type": "string"},
         "minItems": 1,
         "uniqueItems": True
     },
@@ -61,42 +53,28 @@ TRANSACTION_OBJ = {
     "title": "Transaction",
     "type": "object",
     "properties": {
-        "blockhash": {
-            "type": "string"
-        },
-        "blocktime": {
-            "type": "integer"
-        },
-        "locktime": {
-            "type": "integer"
-        },
-        "time": {
-            "type": "integer"
-        },
-        "txid": {
-            "type": "string"
-        },
-        "version": {
-            "type": "integer"
-        },
+        "blockhash": {"type": "string"},
+        "blocktime": {"type": "integer"},
+        "locktime": {"type": "integer"},
+        "time": {"type": "integer"},
+        "txid": {"type": "string"},
+        "version": {"type": "integer"},
         "vin": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "sequence": {
-                        "type": "integer"
-                    },
-                    "txid": {
-                        "type": "string"
-                    },
+                    "sequence": {"type": "integer"},
+                    "txid": {"type": "string"},
                     "vout": {
                         "type": "integer",
                         "minimum": 0
                     }
                 },
-                "required": ["sequence"]
-            }
+                "required": ["sequence"],
+                "additionalProperties": False
+            },
+            "minItems": 1
         },  # end vin
         "vout": {
             "type": "array",
@@ -112,19 +90,14 @@ TRANSACTION_OBJ = {
                         "properties": {
                             "addresses": {
                                 "type": "array",
-                                "items": {
-                                    "type": "string"
-                                },
+                                "items": {"type": "string"},
                                 "minItems": 1
                             },
-                            "reqSigs": {
-                                "type": "integer"
-                            },
-                            "type": {
-                                "type": "string"
-                            }
+                            "reqSigs": {"type": "integer"},
+                            "type": {"type": "string"}
                         },
-                        "required": ["type"]
+                        "required": ["type"],
+                        "additionalProperties": False
                     },  # end scriptPubKey
                     "value": {
                         # "value" is a number in queries, but
@@ -132,8 +105,10 @@ TRANSACTION_OBJ = {
                         "type": "number"
                     }
                 },
-                "required": ["n", "scriptPubKey", "value"]
-            }
+                "required": ["n", "scriptPubKey", "value"],
+                "additionalProperties": False
+            },
+            "minItems": 1
         }  # end vout
     },  # end properties
     "required": ["blockhash", "blocktime", "locktime", "time", "txid",
@@ -150,43 +125,23 @@ QUERY_BLOCK['properties']['data'] = {
     "title": "Block",
     "type": "object",
     "properties": {
-        "bits": {
-            "type": "string"
-        },
-        "difficulty": {
-            "type": "number"
-        },
-        "hash": {
-            "type": "string"
-        },
+        "bits": {"type": "string"},
+        "difficulty": {"type": "number"},
+        "hash": {"type": "string"},
+        "merkleroot": {"type": "string"},
+        "nextblockhash": {"type": "string"},
+        "nonce": {"type": "integer"},
+        "previousblockhash": {"type": "string"},
+        "size": {"type": "integer"},
+        "version": {"type": "integer"},
+        "time": {"type": "integer"},
         "height": {
             "type": "integer",
             "minimum": 0
         },
-        "merkleroot": {
-            "type": "string"
-        },
-        "nextblockhash": {
-            "type": "string"
-        },
-        "nonce": {
-            "type": "integer"
-        },
-        "previousblockhash": {
-            "type": "string"
-        },
         "rawtx": {
             "type": "array",
             "items": TRANSACTION_OBJ
-        },
-        "size": {
-            "type": "integer"
-        },
-        "version": {
-            "type": "integer",
-        },
-        "time": {
-            "type": "integer"
         }
     },
     "required": ["bits", "difficulty", "hash", "height", "merkleroot",
@@ -201,12 +156,8 @@ QUERY_ADDRESS['properties']['data'] = {
     "title": "Address",
     "type": "object",
     "properties": {
-        "note": {
-            "type": "string"
-        },
-        "address": {
-            "type": "string"
-        }
+        "note": {"type": "string"},
+        "address": {"type": "string"}
     },
     "required": ["address"],
     "additionalProperties": False
@@ -216,9 +167,7 @@ QUERY_ADDRESS['properties']['data'] = {
 WATCH_CANCEL = {
     "type": "object",
     "properties": {
-        "success": {
-            "type": "boolean"
-        }
+        "success": {"type": "boolean"}
     },
     "required": ["success"],
     "additionalProperties": False
@@ -228,18 +177,10 @@ WATCH_CANCEL = {
 WATCH_BLOCK = {
     "type": "object",
     "properties": {
-        "callback": {
-            "type": "string"
-        },
-        "id": {
-            "type": "string"
-        },
-        "success": {
-            "type": "boolean"
-        },
-        "type": {
-            "type": "string"
-        }
+        "callback": {"type": "string"},
+        "id": {"type": "string"},
+        "success": {"type": "boolean"},
+        "type": {"type": "string"}
     },
     "required": ["callback", "id", "success", "type"],
     "additionalProperties": False
@@ -248,6 +189,100 @@ WATCH_BLOCK = {
 WATCH_ADDRESS = deepcopy(WATCH_BLOCK)
 WATCH_ADDRESS['properties']['address'] = {"type": "string"}
 WATCH_ADDRESS['required'].append('address')
+
+# Base schema for events.
+_EVENT = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "origin_time": {"type": "integer"},
+        "type": {"type": "string"},
+        "data": None
+    },
+    "required": ["id", "origin_time", "type", "data"],
+    "additionalProperties": False
+}
+
+# JSON for "address" event.
+_ADDRESS_ENTRIES = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "value": {"type": "integer"},
+            "address": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1
+            }
+        },
+        "required": ["address", "value"],
+        "additionalProperties": False
+    },
+    "minItems": 1
+}
+
+EVENT_ADDRESS = deepcopy(_EVENT)
+EVENT_ADDRESS['required'].append('address')
+EVENT_ADDRESS['properties']['address'] = {"type": "string"}
+EVENT_ADDRESS['properties']['data'] = {
+    "type": "object",
+    "properties": {
+        "event_id": {"type": "string"},
+        "txid": {"type": "string"},
+        "block_hash": {"type": ["string", "null"]},
+        "confirmations": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "input": _ADDRESS_ENTRIES,
+        "output": _ADDRESS_ENTRIES
+    },
+    "required": ["event_id", "txid", "block_hash", "confirmations",
+                 "input", "output"],
+    "additionalProperties": False
+}
+
+# JSON for "newblock" event.
+EVENT_NEWBLOCK = _EVENT.copy()
+EVENT_NEWBLOCK['properties']['data'] = {
+    "type": "object",
+    "properties": {
+        "event_id": {"type": "string"},
+        "block_hash": {"type": "string"},
+        "difficulty": {"type": "number"},
+        "previousblockhash": {"type": "string"},
+        "time": {"type": "integer"},
+        "height": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "tx": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+        }
+    },
+    "required": ["block_hash", "difficulty", "event_id",
+                 "height", "previousblockhash", "time", "tx"],
+    "additionalProperties": False
+}
+
+# JSON for "blockdisconnected" event.
+EVENT_DISCBLOCK = _EVENT.copy()
+EVENT_DISCBLOCK['properties']['data'] = {
+    "type": "object",
+    "properties": {
+        "event_id": {"type": "string"},
+        "block_hash": {"type": "string"},
+        "height": {
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "required": ["block_hash", "event_id", "height"],
+    "additionalProperties": False
+}
 
 
 def validate(obj, schema=None):
@@ -261,6 +296,13 @@ def validate(obj, schema=None):
             schema = FRONT_ERROR
         elif 'query' in obj and obj['query'] is None:
             schema = QUERY_NORESULT
+        elif 'origin_time' in obj and 'type' in obj:
+            if obj['type'] == 'address':
+                schema = EVENT_ADDRESS
+            elif obj['type'] == 'newblock':
+                schema = EVENT_NEWBLOCK
+            elif obj['type'] == 'discblock':
+                schema = EVENT_DISCBLOCK
         elif 'data' in obj:
             if obj['data'] is None:
                 schema = QUERY_EMPTYRESULT

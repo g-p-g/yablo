@@ -1,8 +1,11 @@
 import sys
+import json
 
 from klein import route, run
 from twisted.python import log
 from twisted.internet import reactor
+
+from yablo.checkjson import validate
 
 
 port = int(sys.argv[1])
@@ -14,7 +17,9 @@ reqcount = 0
 def watch(request):
     global reqcount
     reqcount += 1
-    log.msg(str(request.content.read()))
+    raw = request.content.read()
+    log.msg(raw)
+    validate(json.loads(raw))
     return str(reqcount)
 
 

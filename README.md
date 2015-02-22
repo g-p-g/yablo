@@ -31,7 +31,9 @@ yablo is a backend system for handling blockchain events. At this moment, its ma
 
 ![yablo overview](http://i.imgur.com/KrE1POD.png)
 
-Notifications are sent as JSON POST requests to the registered webhooks, which are referred as callbacks. To register a webhook, a HTTP requests needs to be sent to the front server, which redirects the request to the watch server, which then records the subscription.
+Notifications are sent as JSON POST requests to registered webhooks, which are referred as callbacks. To register a webhook, a HTTP request needs to be sent to the front server, which redirects the request to the watch server, which then records the subscription.
+
+Consult the [wiki](https://github.com/g-p-g/yablo/wiki) for more information. Improvements to the documentation and code are very welcome!
 
 
 ## Sample callbacks

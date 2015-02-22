@@ -54,7 +54,6 @@ def btcctl_cmd(params, command, attempts=20):
     if isinstance(command, basestring):
         command = [command]
 
-
     retcode = 1
     ctl_out, ctl_err = None, None
     while retcode and attempts:

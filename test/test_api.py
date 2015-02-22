@@ -2,7 +2,7 @@
 import unittest
 
 from yablo import api
-from yablo import checkjson #import validate
+from yablo import checkjson
 
 
 class TestQuery(unittest.TestCase):

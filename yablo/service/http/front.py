@@ -23,6 +23,7 @@ app = Klein()
 
 @app.handle_errors
 def error_handler(request, failure):
+    request.setHeader("Content-Type", 'application/json')
     return _process_error(failure, request)
 
 
@@ -36,6 +37,7 @@ def cors(request):
 @app.route('/', methods=["GET"])
 def query(request):
     request.setHeader("Access-Control-Allow-Origin", '*')
+    request.setHeader("Content-Type", 'application/json')
 
     query_request = str(request.args.get('q', [''])[0].strip().replace(' ', '_'))
     log.msg('q> %r' % query_request)
@@ -54,6 +56,7 @@ def query(request):
 @app.route('/watch', methods=["POST"])
 def watch(request):
     request.setHeader("Access-Control-Allow-Origin", '*')
+    request.setHeader("Content-Type", 'application/json')
 
     addy = str(request.args.get('address', [''])[0]).strip()
     log.msg('m> %r' % addy)
@@ -89,6 +92,7 @@ def watch(request):
 @app.route('/watch/cancel', methods=["POST"])
 def watch_cancel(request):
     request.setHeader("Access-Control-Allow-Origin", '*')
+    request.setHeader("Content-Type", 'application/json')
 
     evt_id = str(request.args.get('id', [''])[0].strip())
     if len(evt_id) != 36:

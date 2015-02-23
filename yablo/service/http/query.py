@@ -23,6 +23,8 @@ btc.setup(notifier=False)
 
 @app.handle_errors
 def error_handler(request, failure):
+    request.setHeader("Content-Type", 'application/json')
+
     log.err(request)
     log.err(failure)
 
@@ -36,6 +38,8 @@ def error_handler(request, failure):
 
 @app.route('/query')
 def handle_query(request):
+    request.setHeader("Content-Type", 'application/json')
+
     log.msg(repr(request.args))
     query = request.args.get('q')[0]
 

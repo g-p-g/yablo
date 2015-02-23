@@ -22,6 +22,7 @@ app = Klein()
 
 @app.handle_errors
 def error_handler(request, failure):
+    request.setHeader("Content-Type", 'application/json')
     log.err(request)
     log.err(failure)
 
@@ -38,6 +39,8 @@ def watch_address(request):
     """
     Start watching a given address.
     """
+    request.setHeader("Content-Type", 'application/json')
+
     body = json.loads(request.content.read())
     addy = body['address']
     webhook = body['callback']
@@ -77,6 +80,7 @@ def watch_newblock(request):
     """
     Start watching for new blocks.
     """
+    request.setHeader("Content-Type", 'application/json')
     result = _simple_subscriber(request, 'newblock', SubscriberNewBlock)
     return json.dumps(result)
 
@@ -86,6 +90,7 @@ def watch_discblock(request):
     """
     Start watching for blocks that are removed from the main chain.
     """
+    request.setHeader("Content-Type", 'application/json')
     result = _simple_subscriber(request, 'discblock', SubscriberDiscBlock)
     return json.dumps(result)
 
@@ -95,6 +100,7 @@ def watch_cancel(request):
     """
     Stop watching a specific event.
     """
+    request.setHeader("Content-Type", 'application/json')
     body = json.loads(request.content.read())
     event_id = body['id']
 

@@ -7,6 +7,7 @@ from .error import YabloException
 
 # JSON returned from the http-front server in case of errors.
 FRONT_ERROR = {
+    "description": "Request not processed due to user error",
     "type": "object",
     "properties": {
         "msg": {"type": "string"},
@@ -29,6 +30,7 @@ _QUERY = {
 
 # No category found for the query entered.
 QUERY_NORESULT = _QUERY.copy()
+QUERY_NORESULT['description'] = "Query did not match any expected format"
 QUERY_NORESULT['properties'] = {
     "query": {"type": "null"},
     "data": {"type": "null"}
@@ -36,6 +38,7 @@ QUERY_NORESULT['properties'] = {
 
 # No results found for the query entered.
 QUERY_EMPTYRESULT = _QUERY.copy()
+QUERY_EMPTYRESULT['description'] = "No results found"
 QUERY_EMPTYRESULT['properties'] = {
     "query": {
         "type": "array",
@@ -49,7 +52,7 @@ QUERY_EMPTYRESULT['properties'] = {
 }
 
 # Found a transaction for the query entered.
-TRANSACTION_OBJ = {
+_TRANSACTION_OBJ = {
     "title": "Transaction",
     "type": "object",
     "properties": {
@@ -117,10 +120,12 @@ TRANSACTION_OBJ = {
 }  # end transaction object
 
 QUERY_TRANSACTION = deepcopy(QUERY_EMPTYRESULT)
-QUERY_TRANSACTION['properties']['data'] = TRANSACTION_OBJ
+QUERY_TRANSACTION['description'] = "A Transaction returned from a query"
+QUERY_TRANSACTION['properties']['data'] = _TRANSACTION_OBJ
 
 # Found a block for the query entered.
 QUERY_BLOCK = deepcopy(QUERY_EMPTYRESULT)
+QUERY_BLOCK['description'] = "A Block returned from a query"
 QUERY_BLOCK['properties']['data'] = {
     "title": "Block",
     "type": "object",
@@ -141,7 +146,7 @@ QUERY_BLOCK['properties']['data'] = {
         },
         "rawtx": {
             "type": "array",
-            "items": TRANSACTION_OBJ
+            "items": _TRANSACTION_OBJ
         }
     },
     "required": ["bits", "difficulty", "hash", "height", "merkleroot",
@@ -152,6 +157,8 @@ QUERY_BLOCK['properties']['data'] = {
 
 # Query for an address (currently unsupported).
 QUERY_ADDRESS = deepcopy(QUERY_EMPTYRESULT)
+QUERY_ADDRESS['description'] = ("An address returned from a query, "
+                                "currently not supported")
 QUERY_ADDRESS['properties']['data'] = {
     "title": "Address",
     "type": "object",
@@ -165,6 +172,7 @@ QUERY_ADDRESS['properties']['data'] = {
 
 # JSON returned after a call to /watch/cancel
 WATCH_CANCEL = {
+    "description": "Result after asking to cancel subscription to an event",
     "type": "object",
     "properties": {
         "success": {"type": "boolean"}
@@ -175,6 +183,8 @@ WATCH_CANCEL = {
 
 # JSON returned after a successfull call to /watch/<...>
 WATCH_BLOCK = {
+    "description": ('Result after subscribing to the "newblock" '
+                    'or "discblock" events'),
     "type": "object",
     "properties": {
         "callback": {"type": "string"},
@@ -187,6 +197,7 @@ WATCH_BLOCK = {
 }
 
 WATCH_ADDRESS = deepcopy(WATCH_BLOCK)
+WATCH_ADDRESS['description'] = 'Result after subscribing to an "address" event'
 WATCH_ADDRESS['properties']['address'] = {"type": "string"}
 WATCH_ADDRESS['required'].append('address')
 
@@ -224,6 +235,7 @@ _ADDRESS_ENTRIES = {
 
 EVENT_ADDRESS = deepcopy(_EVENT)
 EVENT_ADDRESS['required'].append('address')
+EVENT_ADDRESS['description'] = 'Callback for an "address" event'
 EVENT_ADDRESS['properties']['address'] = {"type": "string"}
 EVENT_ADDRESS['properties']['data'] = {
     "type": "object",
@@ -245,6 +257,7 @@ EVENT_ADDRESS['properties']['data'] = {
 
 # JSON for "newblock" event.
 EVENT_NEWBLOCK = _EVENT.copy()
+EVENT_NEWBLOCK['description'] = 'Callback for a "newblock" event'
 EVENT_NEWBLOCK['properties']['data'] = {
     "type": "object",
     "properties": {
@@ -270,6 +283,7 @@ EVENT_NEWBLOCK['properties']['data'] = {
 
 # JSON for "blockdisconnected" event.
 EVENT_DISCBLOCK = _EVENT.copy()
+EVENT_DISCBLOCK['description'] = 'Callback for a "discblock" event'
 EVENT_DISCBLOCK['properties']['data'] = {
     "type": "object",
     "properties": {

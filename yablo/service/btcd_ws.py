@@ -173,17 +173,7 @@ class BitcoinWebsocket(BitcoinRPC):
             return
 
         assert block['height'] == height
-
-        stripped_block = {
-            'b': block['hash'],
-            'h': block['height'],
-            'p': block['previousblockhash'],
-            'd': block['difficulty'],
-            'ts': block['time'],
-            'tx': block['tx']
-        }
-        evt = {'type': redis_keys.EVENT_NEW_BLOCK, 'data': stripped_block}
-        self.red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+        push_stripped_block(self.red, block)
 
     def _handle_blockdisconnected(self, data):
         """A given block has been removed from the main chain."""
@@ -291,6 +281,19 @@ class WebsocketConnection(object):
                 time.sleep(sleep)
 
             attempt += 1
+
+
+def push_stripped_block(red, block):
+    stripped_block = {
+        'b': block['hash'],
+        'h': block['height'],
+        'p': block['previousblockhash'],
+        'd': block['difficulty'],
+        'ts': block['time'],
+        'tx': block['tx']
+    }
+    evt = {'type': redis_keys.EVENT_NEW_BLOCK, 'data': stripped_block}
+    red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
 
 
 def _collect_vout(trans):

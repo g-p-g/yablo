@@ -183,7 +183,7 @@ def process_loop(red, cfg=None):
         logger.debug('waiting for events')
         evt = red.brpoplpush(redis_keys.HANDLE_EVENT,
                              redis_keys.HANDLE_EVENT_TEMP)
-        logger.debug('got event: %r', evt)
+        logger.debug('got event')
 
         try:
             num = process_event(red, session, json.loads(evt))

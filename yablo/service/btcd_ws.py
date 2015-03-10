@@ -44,6 +44,11 @@ class BitcoinRPC(object):
         self.nsent = self.wss.send(method='getblock', params=params)
         return self._recv()
 
+    def getrawtransaction(self, txid, verbose=True):
+        params = [txid, int(verbose)]
+        self.nsent = self.wss.send(method='getrawtransaction', params=params)
+        return self._recv()
+
     def _recv(self):
         response = self.wss.recv()
         if response:
@@ -133,18 +138,7 @@ class BitcoinWebsocket(BitcoinRPC):
         """Received notification about a new transaction."""
         for trans in tx:
             # Leave only the essential keys/values required for the notification.
-            t_output = _collect_vout(trans)
-            t_input = _collect_vin(trans, self.wss, self.logger)
-
-            stripped_tx = {
-                't': trans['txid'],
-                'o': t_output,
-                'i': t_input,
-                'c': trans.get('confirmations', 0),
-                'b': trans.get('blockhash', None)
-            }
-            evt = {'type': redis_keys.EVENT_NEW_TRANS, 'data': stripped_tx}
-            self.red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+            push_stripped_trans(self.red, self.wss, trans)
 
     def _handle_blockconnected(self, data):
         """Received notification about a new block. Get more details."""
@@ -178,12 +172,7 @@ class BitcoinWebsocket(BitcoinRPC):
     def _handle_blockdisconnected(self, data):
         """A given block has been removed from the main chain."""
         block_hash, height = data
-        val = {
-            'b': block_hash,
-            'h': height
-        }
-        evt = {'type': redis_keys.EVENT_BLOCKDISC, 'data': val}
-        self.red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+        push_stripped_discblock(self.red, block_hash, height)
 
 
 class WebsocketConnection(object):
@@ -283,7 +272,24 @@ class WebsocketConnection(object):
             attempt += 1
 
 
-def push_stripped_block(red, block):
+def push_stripped_trans(red, wss, trans, dry_run=False):
+    t_output = _collect_vout(trans)
+    t_input = _collect_vin(trans, wss)
+
+    stripped_tx = {
+        't': trans['txid'],
+        'o': t_output,
+        'i': t_input,
+        'c': trans.get('confirmations', 0),
+        'b': trans.get('blockhash', None)
+    }
+    evt = {'type': redis_keys.EVENT_NEW_TRANS, 'data': stripped_tx}
+    if not dry_run:
+        red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+    return evt
+
+
+def push_stripped_block(red, block, dry_run=False):
     stripped_block = {
         'b': block['hash'],
         'h': block['height'],
@@ -293,7 +299,20 @@ def push_stripped_block(red, block):
         'tx': block['tx']
     }
     evt = {'type': redis_keys.EVENT_NEW_BLOCK, 'data': stripped_block}
-    red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+    if not dry_run:
+        red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+    return evt
+
+
+def push_stripped_discblock(red, block_hash, block_height, dry_run=False):
+    val = {
+        'b': block_hash,
+        'h': block_height
+    }
+    evt = {'type': redis_keys.EVENT_BLOCKDISC, 'data': val}
+    if not dry_run:
+        red.rpush(redis_keys.HANDLE_EVENT, json.dumps(evt))
+    return evt
 
 
 def _collect_vout(trans):
@@ -309,7 +328,7 @@ def _collect_vout(trans):
     return t_output
 
 
-def _collect_vin(trans, wss, logger):
+def _collect_vin(trans, wss):
     t_input = []
 
     for vin in trans['vin']:
@@ -320,12 +339,12 @@ def _collect_vin(trans, wss, logger):
         while True:
             nsent = wss.send(method='getrawtransaction', params=[vin['txid'], 1])
             if nsent is None:
-                logger.debug("getrawtransaction failed, retrying")
+                # getrawtransaction failed, retry.
                 continue
             msg = wss.recv()
             if msg is not None:
                 break
-            logger.debug("recv failed, retrying")
+            # recv failed, retry.
 
         n = vin['vout']
         txref_vout = msg['result']['vout'][n]

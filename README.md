@@ -2,7 +2,7 @@
 
 ## Installation
 
-Prerequisites: python 2.7; [redis](http://redis.io/) server running; [btcd](https://github.com/btcsuite/btcd) operating on testnet or mainnet
+Prerequisites: python 2.7; [redis](http://redis.io/) server running; [btcd](https://github.com/btcsuite/btcd) operating on testnet or mainnet; dev packages for python, libffi, and libssl (`apt-get install python-dev libffi-dev libssl-dev`)
 
 For yablo itself:
 
